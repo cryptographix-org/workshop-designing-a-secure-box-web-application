@@ -1,2 +1,2 @@
-npm i -g gulp tsc typings
+npm i -g gulp typescript typings
 
