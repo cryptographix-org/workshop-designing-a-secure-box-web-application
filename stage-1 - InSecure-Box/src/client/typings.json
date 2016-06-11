@@ -1,0 +1,6 @@
+{
+  "dependencies": {},
+  "globalDependencies": {
+    "cuid": "registry:dt/cuid#0.0.0+20160316155526"
+  }
+}
