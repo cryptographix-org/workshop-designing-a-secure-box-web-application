@@ -1,0 +1,83 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IN-secure:BOX Test</title>
+    <link rel="stylesheet" href="static/css/foundation.css">
+    <link rel="stylesheet" href="static/css/app.css">
+  </head>
+  <body>
+    <div class="row">
+      <div class="large-12 columns">
+        <ul class="tabs" id="nav-tabs" data-tabs>
+          <li class="tabs-title is-active" role="presentation">
+            <a href="#users-tab" aria-selected="true" role="tab" aria-controls="users-tab" id="users-tab-label">Users</a></li>
+          <li class="tabs-title" role="presentation">
+            <a href="#documents-tab" role="tab" aria-controls="documents-tab" aria-selected="false" id="documents-tab-label">Documents</a></li>
+          <li class="tabs-title" role="presentation">
+            <a href="#messages-tab" role="tab" aria-controls="messages-tab" aria-selected="false" id="messages-tab-label">Messages</a></li>
+          <li class="tabs-title" role="presentation">
+            <a href="#debug-tab" role="tab" aria-controls="debug-tab" aria-selected="false" id="debug-tab-label">Debug</a></li>
+        </ul>
+
+        <div class="tabs-content" data-tabs-content="nav-tabs">
+          <div class="tabs-panel is-active" id="users-tab" role="tabpanel" aria-hidden="false" aria-labelledby="users-tab-label">
+            <a href="#" class="button" onclick="listUsers()">List</a>
+            <a href="#" class="button" onclick="createUser()">Create</a>
+            <a href="#" class="button" onclick="checkPassword()">Check</a>
+
+            <form class="row">
+              <div class="medium-3 columns">
+                <label>Username</label>
+                <input id="user-username" type="text" placeholder="Name for login account" />
+              </div>
+              <div class="medium-3 columns">
+                <label>Full Name</label>
+                <input id="user-name" type="text" placeholder="Your real name" />
+              </div>
+              <div class="medium-3 columns">
+                <label>Email</label>
+                <input id="user-email" type="text" placeholder="Your e-mail address" />
+              </div>
+              <div class="medium-3 columns">
+                <label>Password</label>
+                <input id="user-password" type="password" placeholder="Enter a password"/>
+              </div>
+            </form>
+            <!--p><a href="#" class="button">Simple Button</a><br/>
+            <a href="#" class="success button">Success Btn</a><br/>
+            <a href="#" class="alert button">Alert Btn</a><br/>
+            <a href="#" class="secondary button">Secondary Btn</a></p-->
+          </div>
+          <div class="tabs-panel" id="documents-tab" role="tabpanel" aria-hidden="true" aria-labelledby="documents-tab-label">
+            <h1>Documents</h1>
+          </div>
+          <div class="tabs-panel" id="messages-tab" role="tabpanel" aria-hidden="true" aria-labelledby="messages-tab-label">
+            <h1>Messages</h1>
+          </div>
+          <div class="tabs-panel" id="debug-tab" role="tabpanel" aria-hidden="true" aria-labelledby="debug-tab-label">
+            <div class="row columns">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="large-12 columns">
+        <h4><a href="#" onclick="$('#log').val('');">Log</a></h4>
+        <textarea id="log" rows="10" style="font-size: 10pt; font-family: fixed"></textarea>
+      </div>
+    </div>
+
+    <script src="static/js/vendor/jquery.js"></script>
+    <script src="static/js/vendor/what-input.js"></script>
+    <script src="static/js/vendor/foundation.js"></script>
+    <script src="static/js/app.js"></script>
+
+    <script>
+    </script>
+  </body>
+</html>

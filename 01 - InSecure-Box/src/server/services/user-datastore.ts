@@ -14,6 +14,14 @@ export class UserDataStore {
   */
   static users: Map<string, User> = new Map<string, User>();
 
+  listUsers( ): Promise<User[]> {
+    let users = [];
+
+    UserDataStore.users.forEach( ( v,k ) => { users.push( v ); } );
+
+    return Promise.resolve<User[]>( users );
+  }
+
   getUserByUsername( username: string ): Promise<User> {
     return new Promise<User>( (resolve, reject) => {
       let user = UserDataStore.users.get( username );
@@ -62,19 +70,19 @@ export class UserDataStore {
   */
   createUser( newUser: User ): Promise<User> {
 
-    if ( this.getUserByUsername( newUser.username ) )
+    if ( UserDataStore.users.get( newUser.username ) )
       return Promise.reject<User>( 'User already exists' );
 
     // for now, just fabricate a user ...
     let user = {
-      id: cuid(),
       username: newUser.username,
+      id: cuid(),
       name: newUser.name || 'User Name',
       password: newUser.password
     }
 
     // save it
-    UserDataStore.users.set( user.id, user );
+    UserDataStore.users.set( user.username, user );
 
     return Promise.resolve<User>( user );
   }
