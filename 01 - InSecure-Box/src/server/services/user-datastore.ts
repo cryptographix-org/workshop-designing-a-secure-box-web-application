@@ -14,7 +14,7 @@ export class UserDataStore {
   */
   static users: Map<string, User> = new Map<string, User>();
 
-  listUsers( ): Promise<User[]> {
+  static listUsers( ): Promise<User[]> {
     let users = [];
 
     UserDataStore.users.forEach( ( v,k ) => { users.push( v ); } );
@@ -22,7 +22,7 @@ export class UserDataStore {
     return Promise.resolve<User[]>( users );
   }
 
-  getUserByUsername( username: string ): Promise<User> {
+  static getUserByUsername( username: string ): Promise<User> {
     return new Promise<User>( (resolve, reject) => {
       let user = UserDataStore.users.get( username );
 
@@ -34,7 +34,7 @@ export class UserDataStore {
     })
   }
 
-  updateUser( username: string, attributes: {} ): Promise<User> {
+  static updateUser( username: string, attributes: {} ): Promise<User> {
     return new Promise<User>( (resolve, reject) => {
       let user = UserDataStore.users.get( username );
 
@@ -55,7 +55,7 @@ export class UserDataStore {
   /**
   *
   */
-  checkPassword( username: string, password: string ): Promise<boolean> {
+  static checkPassword( username: string, password: string ): Promise<boolean> {
     // lookup user, and check password ..
     let user = UserDataStore.users.get( username );
 
@@ -68,7 +68,7 @@ export class UserDataStore {
   /**
   *
   */
-  createUser( newUser: User ): Promise<User> {
+  static createUser( newUser: User ): Promise<User> {
 
     if ( UserDataStore.users.get( newUser.username ) )
       return Promise.reject<User>( 'User already exists' );
@@ -87,3 +87,7 @@ export class UserDataStore {
     return Promise.resolve<User>( user );
   }
 }
+
+
+UserDataStore.createUser( { username: 'sean', password: '1234', name: 'Sean Michael'} );
+UserDataStore.createUser( { username: 'fisl', password: '9999', name: 'FISL'} );
