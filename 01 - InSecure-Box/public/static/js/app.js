@@ -1,47 +1,31 @@
 $(document).foundation()
 var elem = new Foundation.Tabs($('#nav-tabs'), {});
 
-function getJSON( url, data ) {
+function doJSON( type, url, data ) {
   return new Promise( function( resolve, reject ) {
     jQuery.ajax( {
         url: url,
-        type: "GET",
+        type: type,
+        data: data && JSON.stringify(data),
+        dataType: data && "json",
         contentType: "application/json",
         processData: false,
         success: function( result ) { resolve( result ); },
-        error: function( a,b, err ) { reject( err ); },
+        failure: function( err ) { reject( result ); },
     });
   })
+}
+
+function getJSON( url ) {
+  return doJSON( "GET", url );
 }
 
 function postJSON( url, data ) {
-  return new Promise( function( resolve, reject ) {
-    jQuery.ajax( {
-        url: url,
-        type: "POST",
-        data: JSON.stringify(data),
-        dataType: "json",
-        contentType: "application/json",
-        processData: false,
-        success: function( result ) { resolve( result ); },
-        failure: function( err ) { reject( result ); },
-    });
-  })
+  return doJSON( "POST", url, data );
 }
 
 function putJSON( url, data ) {
-  return new Promise( function( resolve, reject ) {
-    jQuery.ajax( {
-        url: url,
-        type: "PUT",
-        data: JSON.stringify(data),
-        dataType: "json",
-        contentType: "application/json",
-        processData: false,
-        success: function( result ) { resolve( result ); },
-        failure: function( err ) { reject( result ); },
-    });
-  })
+  return doJSON( "PUT", url, data );
 }
 
 /**
@@ -73,12 +57,16 @@ function checkPassword() {
 
   log( 'checkPassword: ' ); logNL( username );
 
-  $.postJSON( "/api/check/", { username: username, password: password }, function( data ) {
-    if ( data.success )
-      alert( 'Password OK');
-    else
-      alert( 'Incorrect Password');
-  } )
+  postJSON( "/api/check/", { username: username, password: password } )
+    .then( function( data ) {
+      if ( data.success )
+        alert( 'Password OK');
+      else
+        alert( 'Incorrect Password');
+    } )
+    .catch( function( err ) {
+      logNl( 'Error: ' + err );
+    });
 }
 
 /**
@@ -94,11 +82,15 @@ function createUser() {
 
   log( 'createUser: ' ); logNL( JSON.stringify( user ) );
 
-  $.putJSON( "/api/users",  user, function( data ) {
-    let user = data;
+  putJSON( "/api/users",  user )
+    .then( function( data ) {
+      let user = data;
 
-    log( '=> ' ); logNL( user );
-  })
+      log( '=> ' ); logNL( user );
+    })
+    .catch( function( err ) {
+      logNl( 'Error: ' + err );
+    });
 }
 
 function addAuth( obj ) {
@@ -120,12 +112,16 @@ function createDocument() {
 
   log( 'createDocument: ' ); logNL( JSON.stringify( doc ) );
 
-  $.putJSON( "/api/documents",  addAuth( doc ), function( data ) {
-    let doc = data;
+  putJSON( "/api/documents",  addAuth( doc ) )
+    .then( function( data ) {
+      let doc = data;
 
-    $('#document-id').val( doc.id );
-    log( '=> ' ); logNL( doc );
-  })
+      $('#document-id').val( doc.id );
+      log( '=> ' ); logNL( doc );
+    })
+    .catch( function( err ) {
+      logNl( 'Error: ' + err );
+    });
 }
 
 
@@ -135,14 +131,18 @@ function createDocument() {
 function listDocuments() {
   log( 'listDocuments: ' );
 
-  $.getJSON( "/api/documents", function( data ) {
-    let users = JSON.parse( data );
+  getJSON( "/api/documents" )
+    .then( function( data ) {
+      let users = JSON.parse( data );
 
-    logNL( users.length + '=>' );
+      logNL( users.length + '=>' );
 
-    for( var i = 0; i < users.length; ++i )
-      logNL( '  ' + JSON.stringify( users[i] ) );
-  })
+      for( var i = 0; i < users.length; ++i )
+        logNL( '  ' + JSON.stringify( users[i] ) );
+    })
+    .catch( function( err ) {
+      logNl( 'Error: ' + err );
+    });
 }
 
 
