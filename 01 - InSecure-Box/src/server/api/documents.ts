@@ -19,10 +19,10 @@ export var router = Router( );
 *   DELETE /api/documents/<id>          (auth) delete Document
 */
 router
-  .get( '/', authenticateUser, (req, res) => {
+  .get( '/',  authenticateUser, (req, res) => {
     DocumentDataStore.listDocuments( req.user )
       .then( docs => {
-        res.json( JSON.stringify( docs ) );
+        res.json( { documents: docs } );
       })
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
@@ -37,14 +37,14 @@ router
   .get( '/:id', authenticateUser, (req: Request, res) => {
     DocumentDataStore.getDocument( req.params.id, req.user )
       .then( doc => {
-        res.json( { doc: doc } );
+        res.json( doc );
       })
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
   .post( '/:id', authenticateUser, (req: Request, res) => {
     DocumentDataStore.updateDocument( req.params.id, req.user, req.params )
       .then( doc => {
-        res.json( { doc: doc } );
+        res.json( doc );
       })
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })

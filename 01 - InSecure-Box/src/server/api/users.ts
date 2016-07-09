@@ -23,7 +23,7 @@ router
     // list users
     UserDataStore.listUsers()
       .then( users => {
-        res.json( JSON.stringify( users ) );
+        res.json( { users: users } );
       })
       .catch( (err) => { res.status( 500 ).send( err ); } );
   })
@@ -44,10 +44,15 @@ router
       .catch( (err) => { res.status( 404 ).send( err ); } );
   })
   .post( '/:username', authenticateUser, (req, res) => {
-    // update user in datastore
-    UserDataStore.updateUser( req.user, req.body )
-      .then( user => {
-        res.json( user );
-      })
-      .catch( (err) => { res.status( 404 ).send( err ); } );
+    // Only logged-in user can update
+    if ( req.params.username != req.user )
+      res.sendStatus( 403 );
+    else {
+      // update user in datastore
+      UserDataStore.updateUser( req.user, req.body )
+        .then( user => {
+          res.json( user );
+        })
+        .catch( (err) => { res.status( 404 ).send( err ); } );
+      }
   });

@@ -1,7 +1,31 @@
 $(document).foundation()
-var elem = new Foundation.Tabs($('#nav-tabs'), {});
+var tabsElem = new Foundation.Tabs($('#nav-tabs'), {});
 
+/**
+********************************************************************************
+*/
+function logNL( s ) {
+  log( s ); log( '\n' );
+}
+
+function log( s ) {
+  var logEl = $('#log');
+
+  if ( typeof s == "object" )
+    s = JSON.stringify( s, null, 2 );
+
+  logEl.val( $('#log').val() + s );
+  logEl.scrollTop(logEl[0].scrollHeight);
+}
+
+/**
+********************************************************************************
+*/
 function doJSON( type, url, data ) {
+  console.log( type + " " + url );
+  if ( data )
+    console.log( data );
+
   return new Promise( function( resolve, reject ) {
     jQuery.ajax( {
         url: url,
@@ -11,21 +35,21 @@ function doJSON( type, url, data ) {
         contentType: "application/json",
         processData: false,
         success: function( result ) { resolve( result ); },
-        failure: function( err ) { reject( result ); },
+        error: function( err ) { logNL( 'Error: ' + err.status + " - " + err.responseText ); reject( err ); },
     });
   })
 }
 
-function getJSON( url ) {
+function getJSON( url) {
   return doJSON( "GET", url );
 }
 
-function postJSON( url, data ) {
-  return doJSON( "POST", url, data );
+function postJSON( url, data, auth ) {
+  return doJSON( "POST", url, data, auth );
 }
 
-function putJSON( url, data ) {
-  return doJSON( "PUT", url, data );
+function putJSON( url, data, auth ) {
+  return doJSON( "PUT", url, data, auth );
 }
 
 /**
@@ -36,37 +60,46 @@ function listUsers() {
 
   getJSON( "/api/users" )
     .then( function( data ) {
-      let users = JSON.parse( data );
+      let users = data.users;
 
       logNL( users.length + '=>' );
 
       for( var i = 0; i < users.length; ++i )
         logNL( '  ' + JSON.stringify( users[i] ) );
-    })
-    .catch( function( err ) {
-      logNl( 'Error: ' + err );
     });
 }
 
 /**
 *
 */
-function checkPassword() {
-  var username = $('#user-username').val();
-  var password = $('#user-password').val();
+function authLogin() {
+  var auth = {
+    username: $('#user-username').val(),
+    password: $('#user-password').val()
+  }
 
-  log( 'checkPassword: ' ); logNL( username );
+  log( 'authLogin: ' ); logNL( auth.username );
 
-  postJSON( "/api/check/", { username: username, password: password } )
+  postJSON( "/api/auth/login", auth )
     .then( function( data ) {
       if ( data.success )
-        alert( 'Password OK');
+        alert( 'Logged In');
       else
         alert( 'Incorrect Password');
-    } )
-    .catch( function( err ) {
-      logNl( 'Error: ' + err );
-    });
+    } );
+}
+
+/**
+*
+*/
+function authLogout() {
+  logNL( 'authLogout' );
+
+  postJSON( "/api/auth/logout" )
+    .then( function( data ) {
+      if ( data.success )
+        alert( 'Logged Out');
+    } );
 }
 
 /**
@@ -82,23 +115,14 @@ function createUser() {
 
   log( 'createUser: ' ); logNL( JSON.stringify( user ) );
 
-  putJSON( "/api/users",  user )
+  putJSON( "/api/users", user )
     .then( function( data ) {
       let user = data;
 
       log( '=> ' ); logNL( user );
-    })
-    .catch( function( err ) {
-      logNl( 'Error: ' + err );
     });
 }
 
-function addAuth( obj ) {
-  obj.username = $('#user-username').val();
-  obj.password = $('#user-password').val();
-
-  return obj;
-}
 /**
 *
 */
@@ -106,21 +130,18 @@ function createDocument() {
   var doc = {
     id: $('#document-id').val(),
     title: $('#document-title').val(),
-    content: $('#document-contents').val(),
+    contents: $('#document-contents').val(),
   }
-
 
   log( 'createDocument: ' ); logNL( JSON.stringify( doc ) );
 
-  putJSON( "/api/documents",  addAuth( doc ) )
+  putJSON( "/api/documents", doc )
     .then( function( data ) {
       let doc = data;
 
       $('#document-id').val( doc.id );
+
       log( '=> ' ); logNL( doc );
-    })
-    .catch( function( err ) {
-      logNl( 'Error: ' + err );
     });
 }
 
@@ -131,31 +152,32 @@ function createDocument() {
 function listDocuments() {
   log( 'listDocuments: ' );
 
+  // Get User's documents
   getJSON( "/api/documents" )
     .then( function( data ) {
-      let users = JSON.parse( data );
+      let docs = data.documents;
 
-      logNL( users.length + '=>' );
+      logNL( docs.length + '=>' );
 
-      for( var i = 0; i < users.length; ++i )
-        logNL( '  ' + JSON.stringify( users[i] ) );
-    })
-    .catch( function( err ) {
-      logNl( 'Error: ' + err );
+      for( var i = 0; i < docs.length; ++i )
+        logNL( '  ' + JSON.stringify( docs[i] ) );
     });
 }
 
-
 /**
-********************************************************************************
+*
 */
-function logNL( s ) {
-  log( s ); log( '\n' );
-}
+function getDocument() {
+  var id = $('#document-id').val();
 
-function log( s ) {
-  if ( typeof s == "object" )
-    s = JSON.stringify( s, null, 2 );
+  log( 'getDocument: ' + id );
 
-  $('#log').val( $('#log').val() + s );
+  getJSON( "/api/documents/" + id )
+    .then( function( doc ) {
+      $('#document-id').val( doc.id );
+      $('#document-title').val( doc.title );
+      $('#document-contents').val( doc.contents );
+
+      logNL( doc );
+    });
 }

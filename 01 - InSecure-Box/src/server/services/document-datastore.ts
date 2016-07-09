@@ -76,7 +76,7 @@ export class DocumentDataStore {
   /**
   *
   */
-  static createDocument( attributes: { id?: string }, username: string ): Promise<Document> {
+  static createDocument( attributes: Document, username: string ): Promise<Document> {
 
     if ( DocumentDataStore.documents.get( attributes.id ) )
       return Promise.reject<Document>( 'Document already exists' );
@@ -117,3 +117,6 @@ export class DocumentDataStore {
   }
 
 }
+
+DocumentDataStore.createDocument( { title: 'Test Document 01', contents: 'Test test test test test' }, 'sean' );
+DocumentDataStore.createDocument( { title: 'Test Document 02', contents: 'A very nice test document'}, 'sean' );

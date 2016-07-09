@@ -3,29 +3,20 @@ import { User, UserDataStore } from '../services/user-datastore';
 
 /**
 * Express middleware to authenticate a user
-*   BODY (json) must contain username, password. Both props will be removed on exit.
-*   Password will be checked for that user,
+*   For now, just retrieves a 'user' cookie, that is the logged-in username
 *   If OK, the 'req' object will gain a user property on exit
 *   If NOK, fail with a 401 (unauthorized) error code
 */
 export function authenticateUser( req, res, next ) {
-  // get document from datastore
-  UserDataStore.checkPassword( req.body.username, req.body.password )
-    .then( ok => {
-      let username = req.body.username;
 
-      delete req.body.password;
-      delete req.body.username;
+  // Just get 'user' cookie, it's the username
+  if ( req.cookies.user ) {
+    req.user = req.cookies.user;
 
-      if ( ok ) {
-        req.user = username;
-
-        next();
-      }
-      else
-        res.sendStatus( 401 );
-    })
-    .catch( (err) => { res.status( 403 ).send( err ); } );
+    next();
+  }
+  else
+    res.sendStatus( 401 );
 }
 
 /**
@@ -39,11 +30,26 @@ export var router = Router( );
 *   POST   /api/auth/logout/                logout a user
 */
 router
-  .post( '/login/', authenticateUser, (req, res) => {
-    // OK - For now, do nothing
-    res.json( { success: true } );
+  .post( '/login/', (req, res) => {
+    // check User password
+    UserDataStore.checkPassword( req.body.username, req.body.password )
+      .then( ok => {
+        let username = req.body.username;
+
+        if ( ok ) {
+          // set username cookie, will be used by authenticateUser middleware
+          res.cookie( 'user', username );
+
+          res.json( { success: true } );
+        }
+        else
+          res.sendStatus( 401 );
+      })
+      .catch( (err) => { res.status( 403 ).send( err ); } );
   })
   .post( '/logout/', authenticateUser, (req, res) => {
-    // OK - For now, do nothing
+    // clear username cookie
+    res.clearCookie( 'user' );
+
     res.json( { success: true } );
   });
