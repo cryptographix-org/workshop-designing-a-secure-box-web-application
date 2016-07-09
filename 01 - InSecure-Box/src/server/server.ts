@@ -5,7 +5,7 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import errorHandler = require("errorhandler");
 
-import { apiRouter } from './api/api-router';
+import { router as apiRouter } from './api/router';
 
 var app = express();
 

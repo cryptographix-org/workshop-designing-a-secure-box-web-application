@@ -2,6 +2,7 @@ import { Document } from '../models/document';
 export { Document };
 
 import { UserDataStore } from './user-datastore';
+import { DocumentShareDataStore } from './document-share-datastore';
 
 //import { cuid } from 'cuid';
 var cuid = require( 'cuid' );
@@ -16,6 +17,10 @@ export class DocumentDataStore {
   */
   static documents: Map<string, Document> = new Map<string, Document>();
 
+  private static getDoc( id: string ): Promise<Document> {
+    return Promise.resolve<Document>( DocumentDataStore.documents.get( id ) );
+  }
+
   static listDocuments( username: string ): Promise<Document[]> {
     let documents = [];
 
@@ -29,29 +34,42 @@ export class DocumentDataStore {
 
   static getDocument( id: string, username: string ): Promise<Document> {
 
-    return new Promise<Document>( (resolve, reject) => {
-      let doc = DocumentDataStore.documents.get( id );
+    return DocumentDataStore.getDoc( id )
+      .then( (doc) => {
+        return new Promise<Document>( (resolve,reject) => {
+          let err;
 
-      if ( !doc )
-        reject( 'Document ' + id + ' not found' );
-      else
-        return Promise.resolve<Document>( doc )
-        .then( doc => {
-          if ( doc.owner != username )
-            reject( 'Document ' + id + ' cannot be accessed' );
-        } );
+          if ( !doc )
+            err = 'Document ' + id + ' not found';
+          else {
+            // Must be owner to get document
+            if ( doc.owner != username )
+              err = 'Document ' + id + ' cannot be accessed';
+          }
+
+          if ( err )
+            reject( err );
+          else
+            resolve( doc );
+
+        });
     })
   }
 
   static updateDocument( id: string, username: string, attributes: {} ): Promise<Document> {
+
     return new Promise<Document>( (resolve, reject) => {
+      // retrieve document (checks ownership)
       DocumentDataStore.getDocument( id, username )
         .then( doc => {
           // Copy new attributes to memory-base
           Object.assign( doc, attributes );
 
           resolve( doc );
-        });
+        })
+        .catch( err => {
+          reject( err );
+        } );
     })
   }
 
@@ -76,4 +94,26 @@ export class DocumentDataStore {
 
     return Promise.resolve<Document>( doc );
   }
+
+  /**
+  *
+  */
+  static deleteDocument( id: string, username: string ): Promise<boolean> {
+
+    return new Promise<boolean>( (resolve, reject) => {
+      // retrieve document (checks ownership)
+      DocumentDataStore.getDocument( id, username )
+        .then( doc => {
+
+          // delete it
+          DocumentDataStore.documents.delete( doc.id );
+
+          resolve( true );
+        })
+        .catch( err => {
+          reject( err );
+        } );
+    })
+  }
+
 }

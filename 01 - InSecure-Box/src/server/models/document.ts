@@ -4,9 +4,11 @@
 export interface Document {
   id?: string;
 
-  owner: string;
+  owner: string;   // -> User.id
 
-  name: string;
+  title: string;
 
   contents: string;
+
+  dateCreated: Date;
 }

@@ -73,11 +73,12 @@ export class UserDataStore {
     if ( UserDataStore.users.get( newUser.username ) )
       return Promise.reject<User>( 'User already exists' );
 
-    // for now, just fabricate a user ...
+    // for now, just fabricate a user object ...
     let user = {
       username: newUser.username,
       id: cuid(),
-      name: newUser.name || 'User Name',
+      name: newUser.name || 'User' + newUser.username,
+      email: newUser.email,
       password: newUser.password
     }
 
