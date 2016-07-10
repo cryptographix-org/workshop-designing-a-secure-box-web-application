@@ -1,5 +1,11 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { User, UserDataStore } from '../services/user-datastore';
+import * as expressJWT from "express-jwt";
+import * as jwt from "jsonwebtoken";
+
+const TOKEN_SECRET = 'CryptoGraphix';
+
+export var tokenValidator = expressJWT( { secret: TOKEN_SECRET } );
 
 /**
 * Express middleware to authenticate a user
@@ -9,9 +15,9 @@ import { User, UserDataStore } from '../services/user-datastore';
 */
 export function authenticateUser( req, res, next ) {
 
-  // Just get 'user' cookie, it's the username
-  if ( req.cookies.user ) {
-    req.user = req.cookies.user;
+  // We need a user (extracted and validated by express-jwt)
+  if ( req.user ) {
+    console.log( req.user );
 
     next();
   }
@@ -37,10 +43,14 @@ router
         let username = req.body.username;
 
         if ( ok ) {
-          // set username cookie, will be used by authenticateUser middleware
-          res.cookie( 'user', username );
-
-          res.json( { success: true } );
+          jwt.sign( { "username": username }, TOKEN_SECRET, { algorithm: 'HS256' },  (err, tok: string) => {
+            if ( err ) {
+              res.sendStatus( 401 );
+              console.log( 'Sign: ' + err );
+              return;
+            }
+            res.json( { success: true, token: tok } );
+          } );
         }
         else
           res.sendStatus( 401 );
@@ -48,8 +58,6 @@ router
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
   .post( '/logout/', authenticateUser, (req, res) => {
-    // clear username cookie
-    res.clearCookie( 'user' );
 
     res.json( { success: true } );
   });

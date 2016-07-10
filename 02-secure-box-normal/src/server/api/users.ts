@@ -2,7 +2,7 @@ import { Router, Request, Response, RequestHandler } from 'express';
 
 import { User, UserDataStore } from '../services/user-datastore';
 
-import { authenticateUser } from './auth';
+import { authenticateUser, tokenValidator } from './auth';
 
 /**
 * Create and export sub-router for '/api/users'
@@ -43,13 +43,13 @@ router
       })
       .catch( (err) => { res.status( 404 ).send( err ); } );
   })
-  .post( '/:username', authenticateUser, (req, res) => {
+  .post( '/:username', tokenValidator, authenticateUser, (req, res) => {
     // Only logged-in user can update
-    if ( req.params.username != req.user )
+    if ( req.params.username != req.user.username )
       res.sendStatus( 403 );
     else {
       // update user in datastore
-      UserDataStore.updateUser( req.user, req.body )
+      UserDataStore.updateUser( req.user.username, req.body )
         .then( user => {
           res.json( user );
         })

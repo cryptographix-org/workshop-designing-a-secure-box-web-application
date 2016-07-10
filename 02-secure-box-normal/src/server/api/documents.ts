@@ -2,12 +2,14 @@ import { Router, Request, Response } from 'express';
 
 import { Document, DocumentDataStore } from '../services/document-datastore';
 
-import { authenticateUser } from './auth';
+import { authenticateUser, tokenValidator } from './auth';
 
 /**
 * Create and export sub-router for '/api/documents'
 */
 export var router = Router( );
+
+router.use( tokenValidator );
 
 /**
 * RESTful API ('CRUD'-style)
@@ -20,7 +22,7 @@ export var router = Router( );
 */
 router
   .get( '/',  authenticateUser, (req, res) => {
-    DocumentDataStore.listDocuments( req.user )
+    DocumentDataStore.listDocuments( req.user.username )
       .then( docs => {
         res.json( { documents: docs } );
       })
@@ -28,21 +30,21 @@ router
   })
   .put( '/', authenticateUser, (req, res) => {
     // create new document in datastore
-    DocumentDataStore.createDocument( <Document>req.body, req.user )
+    DocumentDataStore.createDocument( <Document>req.body, req.user.username )
       .then( doc => {
         res.json( doc );
       })
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
   .get( '/:id', authenticateUser, (req: Request, res) => {
-    DocumentDataStore.getDocument( req.params.id, req.user )
+    DocumentDataStore.getDocument( req.params.id, req.user.username )
       .then( doc => {
         res.json( doc );
       })
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
   .post( '/:id', authenticateUser, (req: Request, res) => {
-    DocumentDataStore.updateDocument( req.params.id, req.user, req.params )
+    DocumentDataStore.updateDocument( req.params.id, req.user.username, req.params )
       .then( doc => {
         res.json( doc );
       })

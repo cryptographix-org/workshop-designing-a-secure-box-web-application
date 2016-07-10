@@ -21,6 +21,8 @@ function log( s ) {
 /**
 ********************************************************************************
 */
+var authToken = null;
+
 function doJSON( type, url, data ) {
   console.log( type + " " + url );
   if ( data )
@@ -30,6 +32,7 @@ function doJSON( type, url, data ) {
     jQuery.ajax( {
         url: url,
         type: type,
+        headers: authToken && { "Authorization": "Bearer " + authToken },
         data: data && JSON.stringify(data),
         dataType: data && "json",
         contentType: "application/json",
@@ -82,8 +85,10 @@ function authLogin() {
 
   postJSON( "api/auth/login", auth )
     .then( function( data ) {
-      if ( data.success )
-        alert( 'Logged In');
+      if ( data.success ) {
+        authToken = data.token;
+        logNL( 'Logged In: ' + data.token );
+      }
       else
         alert( 'Incorrect Password');
     } );
@@ -97,8 +102,10 @@ function authLogout() {
 
   postJSON( "api/auth/logout" )
     .then( function( data ) {
-      if ( data.success )
-        alert( 'Logged Out');
+      if ( data.success ) {
+        authToken = null;
+        logNL( 'Logged Out' );
+      }
     } );
 }
 
