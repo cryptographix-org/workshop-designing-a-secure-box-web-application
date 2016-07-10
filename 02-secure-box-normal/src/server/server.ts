@@ -27,9 +27,9 @@ app.use( express.static(__dirname + '/../../public') );
 app.use( '/api', apiRouter );
 
 //
-let port = 8301;
+let port = 8302;
 app.listen( port, ()=>{
-  console.log("Cryptographix IN-BOX (Insecure Box) Application server listening on port %d in %s mode", port, app.settings.env );
+  console.log("Cryptographix Secure-BOX (normal) Application server listening on port %d in %s mode", port, app.settings.env );
 } );
 
 export var App = app;

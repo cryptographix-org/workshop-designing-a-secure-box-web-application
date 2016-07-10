@@ -1,5 +1,6 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { User, UserDataStore } from '../services/user-datastore';
+
 import * as expressJWT from "express-jwt";
 import * as jwt from "jsonwebtoken";
 
@@ -57,7 +58,7 @@ router
       })
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
-  .post( '/logout/', authenticateUser, (req, res) => {
+  .post( '/logout/', tokenValidator, authenticateUser, (req, res) => {
 
     res.json( { success: true } );
   });

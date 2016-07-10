@@ -51,7 +51,7 @@ router
       .catch( (err) => { res.status( 403 ).send( err ); } );
   })
   .delete( '/:id', authenticateUser, (req: Request, res) => {
-    DocumentDataStore.deleteDocument( req.params.id, req.user )
+    DocumentDataStore.deleteDocument( req.params.id, req.user.username )
       .then( ok => {
         res.json( { status: ok } );
       })

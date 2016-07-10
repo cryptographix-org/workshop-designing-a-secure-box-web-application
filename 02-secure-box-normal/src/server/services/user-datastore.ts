@@ -1,6 +1,8 @@
 import { User } from '../models/user';
 export { User };
 
+import { UserAuthenticator } from '../services/user-auth';
+
 //import { cuid } from 'cuid';
 var cuid = require( 'cuid' );
 
@@ -58,11 +60,10 @@ export class UserDataStore {
   static checkPassword( username: string, password: string ): Promise<boolean> {
     // lookup user, and check password ..
     let user = UserDataStore.users.get( username );
-
-    if ( user && user.password == password )
-      return Promise.resolve<boolean>( true );
-    else
+    if ( !user )
       return Promise.resolve<boolean>( false );
+
+    return UserAuthenticator.checkPassword( password, user.password );
   }
 
   /**
@@ -79,13 +80,19 @@ export class UserDataStore {
       id: cuid(),
       name: newUser.name || 'User' + newUser.username,
       email: newUser.email,
-      password: newUser.password
+      password: ''
     }
 
-    // save it
-    UserDataStore.users.set( user.username, user );
+    return UserAuthenticator.hashPassword( newUser.password )
+      .then( ( hash ) => {
 
-    return Promise.resolve<User>( user );
+        user.password = hash;
+
+        // save it
+        UserDataStore.users.set( user.username, user );
+
+        return Promise.resolve<User>( user );
+      });
   }
 }
 
