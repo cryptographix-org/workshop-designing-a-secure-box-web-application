@@ -1,4 +1,7 @@
-typings init
+#!/bin/bash
+if [ ! -d typings ]; then
+  typings init
+fi;
 
 typings install env~node dt~es6-shim --global --save
 
