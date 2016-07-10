@@ -3,6 +3,16 @@ import * as crypto from "crypto";
 const SALT_LEN = 64;
 const ITERATIONS = 10000;
 const HASH_LEN = 256;
+const PEPPER = "3jH8B9RZObI=";
+
+
+function addPepper( salt: Buffer ): Buffer {
+  let pepper = new Buffer( PEPPER, 'base64' );
+
+  console.log( 'Spicing up ' + salt.toString( 'hex' ) + ' with ' + pepper.toString( 'hex' ) );
+
+  return Buffer.concat( [ salt, pepper ] );
+}
 
 export class UserAuthenticator {
   private static genRandom( len ): Promise<Buffer> {
@@ -37,7 +47,7 @@ export class UserAuthenticator {
       .then( ( salt: Buffer ) => {
         hash += salt.toString('base64');
 
-        return UserAuthenticator.genPBKDF( salt, ITERATIONS, password, 32 );
+        return UserAuthenticator.genPBKDF( addPepper( salt ), ITERATIONS, password, 32 );
       } )
       .then( ( key ) => {
         hash += '$' + key.toString( 'base64' );
@@ -54,7 +64,7 @@ export class UserAuthenticator {
     let salt = new Buffer( parts[1], 'base64' );
     let key = new Buffer( parts[2], 'base64' );
 
-    return UserAuthenticator.genPBKDF( salt, ITERATIONS, password, 32 )
+    return UserAuthenticator.genPBKDF( addPepper( salt ), ITERATIONS, password, 32 )
       .then( ( testKey ) => {
 
         console.log( hash + ' ? ' + testKey.toString('base64' ) );
