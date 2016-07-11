@@ -118,5 +118,5 @@ export class DocumentDataStore {
 
 }
 
-DocumentDataStore.createDocument( { title: 'Test Document 01', contents: 'Test test test test test' }, 'sean' );
-DocumentDataStore.createDocument( { title: 'Test Document 02', contents: 'A very nice test document'}, 'sean' );
+//DocumentDataStore.createDocument( { title: 'Test Document 01', contents: 'Test test test test test' }, 'sean' );
+//DocumentDataStore.createDocument( { title: 'Test Document 02', contents: 'A very nice test document'}, 'sean' );

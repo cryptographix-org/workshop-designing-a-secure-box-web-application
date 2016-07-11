@@ -190,8 +190,9 @@ function getDocument() {
       $('#document-title').val( doc.title );
       $('#document-contents').val( decryptDocument( doc.contents ) );
 
-      return decryptDocument( doc.contents )
       logNL( doc );
+
+      return decryptDocument( doc.contents )
     })
     .then( function( plainDoc ) {
       $('#document-contents').val( plainDoc );
