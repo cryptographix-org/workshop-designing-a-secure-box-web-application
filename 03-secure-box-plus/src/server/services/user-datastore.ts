@@ -19,7 +19,15 @@ export class UserDataStore {
   static listUsers( ): Promise<User[]> {
     let users = [];
 
-    UserDataStore.users.forEach( ( v,k ) => { users.push( v ); } );
+    UserDataStore.users.forEach( ( v,k ) => {
+      // Clone User record
+      let u: User = Object.assign( {}, v );
+
+      // and remove the password
+      delete u.password;
+
+      users.push( u );
+    } );
 
     return Promise.resolve<User[]>( users );
   }

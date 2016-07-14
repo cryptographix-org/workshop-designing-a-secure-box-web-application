@@ -199,12 +199,79 @@ function getDocument() {
     })
 }
 
-var keyPair = {
-  public: null,
-  private: null,
-};
+var userKey = {};
 
-function checkKeys() {
+function createAndSaveKey( username ) {
+  var newUserKey = {
+    id: "",
+    username: username,
+    cryptoKeyPair: { }
+  };
+
+  window.crypto.subtle.generateKey(
+    {
+      name: "RSA-OAEP",
+      modulusLength: 2048, //can be 1024, 2048, or 4096
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+    },
+    true, //whether the key is extractable (i.e. can be used in exportKey)
+    ["wrapKey", "unwrapKey"] //must be ["encrypt", "decrypt"] or ["wrapKey", "unwrapKey"]
+  )
+  .then( function(key) {
+    // save keypair object
+    newUserKey.cryptoKeyPair = key;
+
+    console.log(key);
+    console.log(key.publicKey);
+    console.log(key.privateKey);
+
+    // Get PublicKey in JWT format
+    return window.crypto.subtle.exportKey(
+      "jwk",        //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+      key.publicKey //can be a publicKey or privateKey, as long as extractable was true
+    );
+  } )
+  .then( function( jwkObject ) {
+    // Got the RSA Modulus, so calculate a SHA256-HASH footprint
+    return window.crypto.subtle.digest(
+      {
+        name: "SHA-256",
+      },
+      Base64Binary.decode( jwkObject.n )
+    );
+  } )
+  .then( function( hbuf ) {
+    var hash = Base64Binary.encode( hbuf );
+
+    newUserKey.id = hash;
+
+    return KeyDatabase.insertKey( hash, username, newUserKey.cryptoKeyPair );
+  } )
+  .then( function( keyRec ) {
+    console.log( "Created Key for " + username + ": " + keyRec );
+
+    // update cache
+    userKey = newUserKey;
+
+    // Get PublicKey in JWT format
+    return window.crypto.subtle.exportKey(
+      "jwk",        //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+      userKey.cryptoKeyPair.privateKey //can be a publicKey or privateKey, as long as extractable was true
+    );
+  } )
+  .then( function( jwkObject ) {
+    var key = JSON.stringify( jwkObject, null, 2 );
+    log( "userKey: ");
+    logNL( key );
+    $('#key-blob').val( key );
+  } )
+  .catch( function( err ) {
+      console.error(err);
+  });
+}
+
+function useTestKeys() {
   var rsa_key =
   {
     "kty": "RSA",
@@ -237,28 +304,20 @@ function checkKeys() {
            "AlWAyLWybqq6t16VFd7hQd0y6flUK4SlOydB61gwanOsXGOAOv82cHq0E3"+
            "eL4HrtZkUuKvnPrMnsUUFlfUdybVzxyjz9JF_XyaY14ardLSjf4L_FNY"
   };
-  keyPair.public = Jose.Utils.importRsaPublicKey(rsa_key, "RSA-OAEP");
-  keyPair.private = Jose.Utils.importRsaPrivateKey(rsa_key, "RSA-OAEP");
-
-/*  $.indexedDB("cryptoGraphix")
-    .done( function( db, event ) {
-      return db.objectStore("userKeys").add( keyPair, 'sean' );
-    } )
-    .done( function( db, event ) {
-      console.log( result );
-      console.log( event );
-    } )
-    .fail( function( error, event ) {
-      console.log( error );
-      console.log( event );
-
-    } );*/
+  userKey = {
+    id: "000000000000000000000000000000",
+    username: "default",
+    cryptoKeyPair: {
+      publicKey: Jose.Utils.importRsaPublicKey( rsa_key, "RSA-OAEP"),
+      privateKey: Jose.Utils.importRsaPrivateKey(rsa_key, "RSA-OAEP"),
+    }
+  };
 }
 
 function encryptDocument( plainDoc ) {
   var cryptographer = new Jose.WebCryptographer();
 
-  var encrypter = new JoseJWE.Encrypter( cryptographer, keyPair.public );
+  var encrypter = new JoseJWE.Encrypter( cryptographer, userKey.cryptoKeyPair.publicKey );
 
   return encrypter.encrypt( plainDoc )
     .then(function(result) {
@@ -277,7 +336,7 @@ function encryptDocument( plainDoc ) {
 function decryptDocument( encryptedDoc ) {
   var cryptographer = new Jose.WebCryptographer();
 
-  var decrypter = new JoseJWE.Decrypter( cryptographer, keyPair.private );
+  var decrypter = new JoseJWE.Decrypter( cryptographer, userKey.cryptoKeyPair.privateKey );
 
   return decrypter.decrypt( encryptedDoc )
     .then(function(result) {
@@ -290,8 +349,7 @@ function decryptDocument( encryptedDoc ) {
     });
 }
 
-checkKeys();
-
+useTestKeys();
 encryptDocument( 'A find document you got us in' )
   .then( function( jweDoc ) {
     return decryptDocument( jweDoc );
