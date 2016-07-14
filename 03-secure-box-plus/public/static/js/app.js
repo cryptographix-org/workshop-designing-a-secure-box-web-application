@@ -317,7 +317,7 @@ function useTestKeys() {
 function encryptDocument( plainDoc ) {
   var cryptographer = new Jose.WebCryptographer();
 
-  var encrypter = new JoseJWE.Encrypter( cryptographer, userKey.cryptoKeyPair.publicKey );
+  var encrypter = new JoseJWE.Encrypter( cryptographer, Promise.resolve( userKey.cryptoKeyPair.publicKey ) );
 
   return encrypter.encrypt( plainDoc )
     .then(function(result) {
@@ -336,7 +336,8 @@ function encryptDocument( plainDoc ) {
 function decryptDocument( encryptedDoc ) {
   var cryptographer = new Jose.WebCryptographer();
 
-  var decrypter = new JoseJWE.Decrypter( cryptographer, userKey.cryptoKeyPair.privateKey );
+  // JWE.js needs a key-promise, not a key !
+  var decrypter = new JoseJWE.Decrypter( cryptographer, Promise.resolve( userKey.cryptoKeyPair.privateKey ) );
 
   return decrypter.decrypt( encryptedDoc )
     .then(function(result) {
