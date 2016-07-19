@@ -186,13 +186,16 @@ function getDocument() {
 
   getJSON( "api/documents/" + id )
     .then( function( doc ) {
+      var docPlain = decryptDocument( doc.contents );
+
       $('#document-id').val( doc.id );
       $('#document-title').val( doc.title );
-      $('#document-contents').val( decryptDocument( doc.contents ) );
+      $('#document-contents').val( docPlain );
 
       logNL( doc );
+      logNL( docPlain );
 
-      return decryptDocument( doc.contents )
+      return docPlain;
     })
     .then( function( plainDoc ) {
       $('#document-contents').val( plainDoc );
